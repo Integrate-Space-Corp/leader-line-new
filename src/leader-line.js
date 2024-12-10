@@ -86,9 +86,11 @@
     KEYWORD_AUTO = 'auto',
     BBOX_PROP = {x: 'left', y: 'top', width: 'width', height: 'height'},
 
-    MIN_GRAVITY = 80, MIN_GRAVITY_SIZE = 4, MIN_GRAVITY_R = 5,
-    MIN_OH_GRAVITY = 120, MIN_OH_GRAVITY_OH = 8, MIN_OH_GRAVITY_R = 3.75,
-    MIN_ADJUST_LEN = 10, MIN_GRID_LEN = 30,
+    // Adjusted values, copied from https://github.com/anseki/leader-line/issues/133#issuecomment-633443973
+    MIN_GRAVITY = 20, MIN_GRAVITY_SIZE = 4, MIN_GRAVITY_R = 5,
+    MIN_OH_GRAVITY = 30, MIN_OH_GRAVITY_OH = 8, MIN_OH_GRAVITY_R = 3.75,
+    MIN_ADJUST_LEN = 10, MIN_GRID_LEN = 5,
+
 
     CIRCLE_CP = 0.5522847, CIRCLE_8_RAD = 1 / 4 * Math.PI,
     RE_PERCENT = /^\s*(\-?[\d\.]+)\s*(\%)?\s*$/,

@@ -1,6 +1,6 @@
 {
-  "name": "leader-line-new",
-  "version": "1.1.9",
+  "name": "leader-line-integrate",
+  "version": "1.0.0",
   "title": "LeaderLine",
   "description": "Draw a leader line in your web page. Export lib",
   "keywords": [
@@ -39,12 +39,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com:II-alex-II/leader-line-new.git"
+    "url": "git://github.com/Integrate-Space-Corp/leader-line-new.git"
   },
-  "bugs": "https://github.com/II-alex-II/leader-line/issues",
+  "bugs": "https://github.com/Integrate-Space-Corp/leader-line-new/issues",
   "license": "MIT",
   "authors": [
     "anseki <AnSeki.aff@gmail.com>",
-    "modify: <radchenko.oskh@gmail.com>"
+    "modify: <radchenko.oskh@gmail.com>",
+    "modify: <kellie@integrate.co>"
   ]
 }

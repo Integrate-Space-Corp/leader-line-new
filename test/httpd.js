@@ -31,18 +31,26 @@ function getPathname(requestUrl) {
   }
 }
 
+function resolveInside(root, requestPath) {
+  const rootPath = path.resolve(root);
+  const relativePath = requestPath.replace(/^\/+/, '');
+  const filePath = path.resolve(rootPath, relativePath);
+
+  return filePath === rootPath || filePath.startsWith(`${rootPath}${path.sep}`) ? filePath : null;
+}
+
 function resolveRequestPath(pathname) {
   for (const packageName of MODULE_PACKAGES) {
     if (pathname === `/${packageName}` || pathname.startsWith(`/${packageName}/`)) {
-      return path.join(getPackageRoot(packageName), pathname.slice(packageName.length + 2));
+      return resolveInside(getPackageRoot(packageName), pathname.slice(packageName.length + 2));
     }
   }
 
   if (pathname === '/src' || pathname.startsWith('/src/')) {
-    return path.join(DOC_ROOT, '..', pathname);
+    return resolveInside(path.join(DOC_ROOT, '..'), pathname);
   }
 
-  return path.join(DOC_ROOT, pathname);
+  return resolveInside(DOC_ROOT, pathname);
 }
 
 function sendResponse(response, statusCode, body, contentType = 'text/plain') {
@@ -74,6 +82,12 @@ http.createServer((request, response) => {
   }
 
   const filePath = resolveRequestPath(pathname);
+  if (!filePath) {
+    console.error('(%s) 403', request.url);
+    sendResponse(response, 403, 'Forbidden');
+    return;
+  }
+
   fs.stat(filePath, (statError, stat) => {
     if (statError) {
       console.error('(%s) 404', request.url);

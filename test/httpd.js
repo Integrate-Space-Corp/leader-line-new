@@ -3,9 +3,9 @@
 'use strict';
 
 const
-  nodeStaticAlias = require('node-static-alias'),
-  log4js = require('log4js'),
+  fs = require('fs'),
   http = require('http'),
+  path = require('path'),
 
   DOC_ROOT = __dirname,
   PORT = 8080,
@@ -15,60 +15,84 @@ const
     'test-page-loader',
     'anim-event',
     'plain-draggable'
-  ],
+  ];
 
-  logger = (() => {
-    log4js.configure({
-      appenders: {
-        out: {
-          type: 'console',
-          layout: {
-            type: 'pattern',
-            pattern: '%[[%r]%] %m' // Super simple format
-          }
-        }
-      },
-      categories: {default: {appenders: ['out'], level: 'info'}}
-    });
-    return log4js.getLogger('node-static-alias');
-  })(),
+function getPackageRoot(packageName) {
+  return require.resolve(packageName).replace(
+    new RegExp(`^(.*[/\\\\]node_modules)[/\\\\]${packageName}[/\\\\].*$`),
+    `$1${path.sep}${packageName}`);
+}
 
-  staticAlias = new nodeStaticAlias.Server(DOC_ROOT, {
-    cache: false,
-    headers: {'Cache-Control': 'no-cache, must-revalidate'},
-    alias:
-      MODULE_PACKAGES.map(packageName =>
-        ({ // node_modules
-          match: new RegExp(`^/${packageName}/.+`),
-          serve: `${require.resolve(packageName).replace(
-            // Include `packageName` for nested `node_modules`
-            new RegExp(`^(.*[/\\\\]node_modules)[/\\\\]${packageName}[/\\\\].*$`), '$1')}<% reqPath %>`,
-          allowOutside: true
-        })
-      ).concat([
-        {
-          match: /^\/src/,
-          serve: '..<% reqPath %>',
-          allowOutside: true
-        }
-      ]),
-    logger
+function getPathname(requestUrl) {
+  try {
+    return decodeURIComponent(new URL(requestUrl, `http://localhost:${PORT}`).pathname);
+  } catch (error) {
+    return null;
+  }
+}
+
+function resolveRequestPath(pathname) {
+  for (const packageName of MODULE_PACKAGES) {
+    if (pathname === `/${packageName}` || pathname.startsWith(`/${packageName}/`)) {
+      return path.join(getPackageRoot(packageName), pathname.slice(packageName.length + 2));
+    }
+  }
+
+  if (pathname === '/src' || pathname.startsWith('/src/')) {
+    return path.join(DOC_ROOT, '..', pathname);
+  }
+
+  return path.join(DOC_ROOT, pathname);
+}
+
+function sendResponse(response, statusCode, body, contentType = 'text/plain') {
+  response.writeHead(statusCode, {
+    'Cache-Control': 'no-cache, must-revalidate',
+    'Content-Type': contentType
   });
+  response.end(body);
+}
+
+function getContentType(filePath) {
+  switch (path.extname(filePath)) {
+    case '.css': return 'text/css';
+    case '.html': return 'text/html';
+    case '.js': return 'text/javascript';
+    case '.json': return 'application/json';
+    case '.svg': return 'image/svg+xml';
+    default: return 'application/octet-stream';
+  }
+}
 
 http.createServer((request, response) => {
-  request.addListener('end', () => {
-    staticAlias.serve(request, response, error => {
-      if (error) {
-        response.writeHead(error.status, error.headers);
-        logger.error('(%s) %s', request.url, response.statusCode);
-        if (error.status === 404) {
-          response.end('Not Found');
-        }
-      } else {
-        logger.info('(%s) %s', request.url, response.statusCode);
+  const pathname = getPathname(request.url);
+
+  if (!pathname) {
+    console.error('(%s) 400', request.url);
+    sendResponse(response, 400, 'Bad Request');
+    return;
+  }
+
+  const filePath = resolveRequestPath(pathname);
+  fs.stat(filePath, (statError, stat) => {
+    if (statError) {
+      console.error('(%s) 404', request.url);
+      sendResponse(response, 404, 'Not Found');
+      return;
+    }
+
+    const resolvedPath = stat.isDirectory() ? path.join(filePath, 'index.html') : filePath;
+    fs.readFile(resolvedPath, (readError, content) => {
+      if (readError) {
+        console.error('(%s) 404', request.url);
+        sendResponse(response, 404, 'Not Found');
+        return;
       }
+
+      console.info('(%s) 200', request.url);
+      sendResponse(response, 200, content, getContentType(resolvedPath));
     });
-  }).resume();
+  });
 }).listen(PORT);
 
 console.log(`START: http://localhost:${PORT}/\nROOT: ${DOC_ROOT}`);

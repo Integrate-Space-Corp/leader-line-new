@@ -35,6 +35,9 @@
   "scripts": {
     "test": "node ./test/httpd"
   },
+  "overrides": {
+    "js-yaml": "^4.2.0"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/Integrate-Space-Corp/leader-line-new.git"

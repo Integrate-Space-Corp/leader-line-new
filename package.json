@@ -26,17 +26,17 @@
     "grunt": "^1.6.2",
     "grunt-task-helper": "^0.3.10",
     "htmlclean": "^3.0.8",
-    "jasmine-core": "^2.99.1",
+    "jasmine-core": "^7.0.2",
     "plain-draggable": "^2.0.24",
-    "pre-proc": "^0.2.8",
-    "test-page-loader": "1.0.7",
+    "pre-proc": "^1.0.2",
+    "test-page-loader": "^1.0.8",
     "uglify-js": "^3.3.11"
   },
   "scripts": {
     "test": "node ./test/httpd"
   },
   "overrides": {
-    "js-yaml": "^4.3.0"
+    "js-yaml": "^4.3.1"
   },
   "repository": {
     "type": "git",

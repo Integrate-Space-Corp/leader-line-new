@@ -51,6 +51,13 @@ For example, the following uses LeaderLine with [D3.js](https://d3js.org/). Move
 
 [![ex-040](img/ex-040.gif)](https://anseki.github.io/leader-line/)
 
+## Development dependency security
+
+Version 1.0.3 contains dependency updates: the development lockfile resolves
+`brace-expansion` 1.1.21 and `undici` 7.30.1. Install the locked build and browser-test
+dependencies with `npm ci`; use `npm audit` to check all severities, including
+development dependencies. These packages are not runtime dependencies of the library.
+
 ## Usage
 
 Load LeaderLine into your web page.
